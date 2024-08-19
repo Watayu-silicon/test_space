@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A</title>
+    <title>神奈川県の信号機マップ（ズーム依存）</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <style>
@@ -118,15 +118,11 @@
         .red_arrow_up::after {
             border-bottom: 20px solid red;
         }
-        #request_btn {
-            position: relative;
-            z-index: 1000;
-        }
     </style>
 </head>
 <body>
     <img src="C:\Users\wata_\Downloads\6f9e1c46b8259cd7ad3928a04d83df33_t.jpeg" alt="" id="direction">
-    <button class="start-btn">Start compass</button>
+    <button class="start-btn" style="z-index: 100; position: relative;">Start compass</button>
     <div class="arrow-container">
         <div class="horizontal_arrow" id="arrow_lie"></div>    
         <div class="vertical_arrow" id="arrow_up"></div>
@@ -162,7 +158,7 @@
         }
         function handler(e) {
             let compass = e.webkitCompassHeading || Math.abs(e.alpha - 360);
-            compassCircle.style.transform = `translate(-50%, -50%) rotate(${-compass}deg)`;
+            compassCircle.style.transform = `rotate(${-compass}deg)`;
         }
 
         init();
