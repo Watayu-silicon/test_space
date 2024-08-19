@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <style>
+        #direction {
+            top: 1%;
+            position: absolute;
+            left: 72%;
+            height: 100px;
+            width: 100px;
+        }
+        #map {
+            left: 3%;
+            top: 49%;
+            position: absolute;
+            height: 50%;
+            width: 93%;
+        }
+        #display_second_lie {
+            left: 8%;
+            font-size: 52px;
+            position: absolute;
+            top: 13%;
+        }
+        #display_second_up {
+            left: 45%;
+            font-size: 52px;
+            position: absolute;
+            top: 30%;
+        }
+        .line {
+            position: absolute;
+            top: 48%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: black;
+        }
+        .arrow-container {
+            position: absolute;
+            top: -27%;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .horizontal_arrow {
+            width: 180px;
+            background-color: #000;
+            height: 4px;
+            position: absolute;
+        }
+        
+        .horizontal_arrow::after {
+            content: '';
+            position: absolute;
+            right: -10px;
+            top: -8px;
+            width: 0;
+            height: 0;
+            border-left: 20px solid #000;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+        }
+
+        .vertical_arrow {
+            width: 4px;
+            height: 180px;
+            background-color: #000;
+            position: absolute;
+        }
+        
+        .vertical_arrow::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -8px;
+            width: 0;
+            height: 0;
+            border-bottom: 20px solid #000;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+        }
+        .green {
+            color:limegreen;
+        }
+        .red {
+            color: red;
+        }
+        .green_arrow_lie {
+            background-color: limegreen;
+        }
+        .green_arrow_lie::after{
+            border-left: 20px solid limegreen;
+        }
+        .green_arrow_up {
+            background-color: limegreen;
+        }
+        .green_arrow_up::after{
+            border-bottom: 20px solid limegreen;
+        }
+        .red_arrow_lie {
+            background-color: red;
+        }
+        .red_arrow_lie::after {
+            border-left: 20px solid red;
+        }
+        .red_arrow_up {
+            background-color: red;
+        }
+        .red_arrow_up::after {
+            border-bottom: 20px solid red;
+        }
+        #request_btn {
+            position: relative;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <img src="C:\Users\wata_\Downloads\6f9e1c46b8259cd7ad3928a04d83df33_t.jpeg" alt="" id="direction">
+    <button class="start-btn">Start compass</button>
+    <div class="arrow-container">
+        <div class="horizontal_arrow" id="arrow_lie"></div>    
+        <div class="vertical_arrow" id="arrow_up"></div>
+    </div>
+    <p id="display_second_lie"></p>
+    <p id="display_second_up"></p>
+    <div class="line"></div>
+    <script>
+        const compassCircle = document.querySelector(".arrow-container");
+        const startBtn = document.querySelector(".start-btn");
+        const isIOS =
+            navigator.userAgent.match(/(iPod|iPhone|iPad)/) &&
+            navigator.userAgent.match(/AppleWebKit/);
+        function init() {
+            startBtn.addEventListener("click", startCompass);
+
+            if (!isIOS) {
+                window.addEventListener("deviceorientationabsolute", handler, true);
+            }
+        }
+        function startCompass() {
+            if (isIOS) {
+                DeviceOrientationEvent.requestPermission()
+                .then((response) => {
+                    if (response === "granted") {
+                    window.addEventListener("deviceorientation", handler, true);
+                    } else {
+                    alert("Permission has to be allowed!");
+                    }
+                })
+                .catch(() => alert("Not supported"));
+            }
+        }
+        function handler(e) {
+            let compass = e.webkitCompassHeading || Math.abs(e.alpha - 360);
+            compassCircle.style.transform = `translate(-50%, -50%) rotate(${-compass}deg)`;
+        }
+
+        init();
+
+
+
+        count = 10;
+        // 1秒ごとにカウントダウンする関数
+        display_second_lie = document.getElementById("display_second_lie")
+        display_second_up = document.getElementById("display_second_up")
+        arrow_up = document.getElementById("arrow_up")
+        arrow_lie = document.getElementById("arrow_lie")
+        green_north = 1
+        display_second_lie.classList.add("green")
+        display_second_up.classList.add("red")
+        arrow_lie.classList.add("green_arrow_lie")
+        arrow_up.classList.add("red_arrow_up")
+        change_color = 0
+        function countDown() {
+            display_second_lie.innerText = count
+            display_second_up.innerText = count
+            console.log(count);
+            if (count <= 1) {
+                green_north *= -1
+                count = 11;
+                change_color = 2;
+            }
+            if(change_color === 1) {
+                if (green_north == 1){
+                    display_second_lie.classList.remove(...display_second_lie.classList);
+                    display_second_up.classList.remove(...display_second_up.classList)
+                    arrow_lie.classList.remove("red_arrow_lie");
+                    arrow_up.classList.remove("green_arrow_up");
+                    display_second_lie.classList.add("green")
+                    display_second_up.classList.add("red")
+                    arrow_lie.classList.add('green_arrow_lie')
+                    arrow_up.classList.add("red_arrow_up")
+                } else {
+                    display_second_lie.classList.remove(...display_second_lie.classList);
+                    display_second_up.classList.remove(...display_second_up.classList)
+                    arrow_lie.classList.remove("green_arrow_lie");
+                    arrow_up.classList.remove("red_arrow_up")
+                    display_second_lie.classList.add("red")
+                    display_second_up.classList.add("green")
+                    arrow_lie.classList.add('red_arrow_lie')
+                    arrow_up.classList.add("green_arrow_up")
+                }
+            }
+        // カウントが0になったらタイマーを停止
+            timer = setTimeout(countDown, 1000);
+            change_color --;
+            count--;
+        }
+
+        // 初回実行
+        let timer = setTimeout(countDown, 1000);
+    </script>
+</body>
+</html>
