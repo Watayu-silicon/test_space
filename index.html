@@ -26,12 +26,14 @@
             font-size: 52px;
             position: absolute;
             top: 36%;
+            transform-origin: center center;
         }
         #display_second_up {
             left: 45%;
             font-size: 52px;
             position: absolute;
             top: 55%;
+            transform-origin: center center;
         }
         .line {
             position: absolute;
@@ -163,6 +165,8 @@
         function handler(e) {
             let compass = e.webkitCompassHeading || Math.abs(e.alpha - 360);
             compassCircle.style.transform = `rotate(${-compass}deg)`;
+            display_second_lie.style.transform = `rotate(${compass}deg)`;
+            display_second_up.style.transform = `rotate(${compass}deg)`;
         }
 
         init();
