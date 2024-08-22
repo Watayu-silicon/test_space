@@ -262,6 +262,9 @@
             compassCircle.style.transform = `rotate(${-compass}deg)`;
         }
 
+        init();
+        
+
         var kanagawaCenter = [35.4478, 139.6425];
         var map = L.map('map').setView(kanagawaCenter, 10);
         var markers = L.layerGroup().addTo(map);
