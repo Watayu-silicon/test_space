@@ -3,234 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>リアルタイム信号機マップ</title>
+    <title>神奈川県の信号機マップ（ズーム依存）</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            font-family: Arial, sans-serif;
-        }
-        header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 60px;
-            background-color: #333;
-            color: white;
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            z-index: 1000;
-        }
-        #menu-btn {
-            font-size: 24px;
-            margin-right: 20px;
-            cursor: pointer;
+        #direction {
+            top: 1%;
+            position: absolute;
+            left: 72%;
+            height: 100px;
+            width: 100px;
         }
         #map {
-            height: calc(100% - 60px);
-            width: 100%;
+            left: 3%;
+            top: 49%;
             position: absolute;
-            top: 60px;
+            height: 50%;
+            width: 93%;
         }
-        #locateMe {
+        #display_second_lie {
+            left: 8%;
+            font-size: 52px;
             position: absolute;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-            padding: 10px;
-            background-color: white;
-            border: none;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            cursor: pointer;
+            top: 13%;
         }
-        #signal-info {
-            position: fixed;
-            bottom: -340px; /* 最初は画面の外にある状態 */
+        #display_second_up {
+            left: 45%;
+            font-size: 52px;
+            position: absolute;
+            top: 30%;
+        }
+        .line {
+            position: absolute;
+            top: 48%;
             left: 0;
             right: 0;
-            height: 300px;
-            background-color: white;
-            transition: bottom 0.3s, height 0.3s; /* bottom のアニメーションを追加 */
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-            z-index: 1001;
-            padding: 20px;
-            overflow-y: auto;
+            height: 2px;
+            background-color: black;
         }
-
-        #signal-info.active {
-            bottom: -120px; /* ボタンがクリックされると、画面内にスライドイン */
-        }
-
-        #signal-info.full {
-            bottom: -40px; /* 上方向にスライドし、全画面モードにする */
-            height: calc(100% - 60px); /* 全画面モードの高さ */
-        }
-
-
         .arrow-container {
             position: absolute;
-            left: 0%;
-            top: -18%;
+            rotate: -45deg;
+            top: -27%;
             width: 100vw;
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
         }
-
-        #display_second_lie {
-            left: 10%;
-            font-size: 52px;
-            position: absolute;
-            top: 36%;
-            transform-origin: center center;
-        }
-        #display_second_up {
-            left: 45%;
-            font-size: 52px;
-            position: absolute;
-            top: 57%;
-            transform-origin: center center;
-        }
-
         .horizontal_arrow {
-            background: linear-gradient(90deg, limegreen 100%, antiquewhite 100%);
-            width: 160px;
-            background-color: antiquewhite;
-            transition: background 1s linear;
-            height: 8px;
+            width: 180px;
+            background-color: #000;
+            height: 4px;
             position: absolute;
         }
         
-        .horizontal_arrow::before {
-            content: '';
-            position: absolute;
-            left: -14px;
-            top: -6px;
-            width: 0;
-            height: 0;
-            border-right: 20px solid #000;
-            border-top: 10px solid transparent;
-            border-bottom: 10px solid transparent;
-        }
-
         .horizontal_arrow::after {
             content: '';
             position: absolute;
-            right: -14px;
-            top: -6px;
+            right: -10px;
+            top: -8px;
             width: 0;
             height: 0;
             border-left: 20px solid #000;
             border-top: 10px solid transparent;
             border-bottom: 10px solid transparent;
         }
-
         .vertical_arrow {
-            background: linear-gradient(antiquewhite 0%, red 0%);
-            width: 8px;
-            height: 160px;
-            background-color:antiquewhite;
-            transition: background 1s linear;
+            width: 4px;
+            height: 180px;
+            background-color: #000;
             position: absolute;
         }
         
-        .vertical_arrow::before {
-            content: '';
-            position: absolute;
-            bottom: -14px;
-            left: -5px;
-            width: 0;
-            height: 0;
-            border-left: 10px solid transparent;
-            border-right: 10px solid transparent;
-        }
-
         .vertical_arrow::after {
             content: '';
             position: absolute;
-            top: -14px;
-            left: -5px;
+            top: -10px;
+            left: -8px;
             width: 0;
             height: 0;
+            border-bottom: 20px solid #000;
             border-left: 10px solid transparent;
             border-right: 10px solid transparent;
+        }
+        .green {
+            color:limegreen;
+        }
+        .red {
+            color: red;
+        }
+        .green_arrow_lie {
+            background-color: limegreen;
         }
         .green_arrow_lie::after{
             border-left: 20px solid limegreen;
         }
-        .green_arrow_lie::before{
-            border-right: 20px solid limegreen;
+        .green_arrow_up {
+            background-color: limegreen;
         }
-        .green_arrow_up::before {
-            border-top: 20px solid limegreen;
-        }
-
-        .green_arrow_up::after {
+        .green_arrow_up::after{
             border-bottom: 20px solid limegreen;
         }
-
-        .red_arrow_up::before {
-            border-top: 20px solid red;
-        }
-
-        .red_arrow_up::after {
-            border-bottom: 20px solid red;
+        .red_arrow_lie {
+            background-color: red;
         }
         .red_arrow_lie::after {
             border-left: 20px solid red;
         }
-        .red_arrow_lie::before {
-            border-right: 20px solid red;
+        .red_arrow_up {
+            background-color: red;
+        }
+        .red_arrow_up::after {
+            border-bottom: 20px solid red;
         }
         #request_btn {
             position: relative;
             z-index: 1000;
         }
-        #expand-btn {
-            position: absolute;
-            z-index: 1500;
-            top: 10px;
-            right: 10px;
-            padding: 5px 10px;
-            background-color: #f0f0f0;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        #info {
-            position: relative;
-            top: -25px;
-        }
-        
     </style>
 </head>
 <body>
-    <header>
-        <div id="menu-btn">☰</div>
-        <h1 style="font-size: 19px;">リアルタイム信号機マップ</h1>
-    </header>
-    <div id="map"></div>
-    <button id="locateMe">現在位置を表示</button>
-        <button id="expand-btn">拡大</button>
-        <button class="start-btn" style="width:60px; font-size: 10px; position: relative; top: 4%; left: 33%; z-index: 1000;">Start compass</button>
-        <p id="info"></p>
-        <div class="arrow-container">
-            <div class="horizontal_arrow" id="arrow_lie"></div>    
-            <div class="vertical_arrow" id="arrow_up"></div>
-            <p id="display_second_lie"></p>
-            <p id="display_second_up"></p>
-        </div>
+    <img src="C:\Users\wata_\Downloads\6f9e1c46b8259cd7ad3928a04d83df33_t.jpeg" alt="" id="direction">
+    <button class="start-btn" style="z-index: 100; position: relative;">Start compass</button>
+    <div class="arrow-container">
+        <div class="horizontal_arrow" id="arrow_lie"></div>    
+        <div class="vertical_arrow" id="arrow_up"></div>
+    </div>
+    <p id="display_second_lie"></p>
+    <p id="display_second_up"></p>
+    <div class="line"></div>
     <script>
-        // 既存のJavaScriptコードをここに配置し、以下の変更を加えます
-
         const compassCircle = document.querySelector(".arrow-container");
         const startBtn = document.querySelector(".start-btn");
         const isIOS =
@@ -238,26 +141,77 @@
             navigator.userAgent.match(/AppleWebKit/);
         function init() {
             startBtn.addEventListener("click", startCompass);
-
             if (!isIOS) {
                 window.addEventListener("deviceorientationabsolute", handler, true);
             }
         }
-
-        function handleOrientation(event) {
-            let direction;
-            if (event.webkitCompassHeading) {
-                // iOS devices
-                direction = event.webkitCompassHeading;
-            } else if (event.absolute === true && event.alpha !== null) {
-                // Android devices
-                direction = 360 - event.alpha;
-            } else {
-                console.log("Compass not supported");
-                return;
+        function startCompass() {
+            if (isIOS) {
+                DeviceOrientationEvent.requestPermission()
+                .then((response) => {
+                    if (response === "granted") {
+                    window.addEventListener("deviceorientation", handler, true);
+                    } else {
+                    alert("Permission has to be allowed!");
+                    }
+                })
+                .catch(() => alert("Not supported"));
             }
-            compassCircle.style.transform = `rotate(${direction}deg)`;
         }
+        function handler(e) {
+            let compass = e.webkitCompassHeading || Math.abs(e.alpha - 360);
+            compassCircle.style.transform = `rotate(${-compass}deg)`;
+        }
+        init();
+        count = 10;
+        // 1秒ごとにカウントダウンする関数
+        display_second_lie = document.getElementById("display_second_lie")
+        display_second_up = document.getElementById("display_second_up")
+        arrow_up = document.getElementById("arrow_up")
+        arrow_lie = document.getElementById("arrow_lie")
+        green_north = 1
+        display_second_lie.classList.add("green")
+        display_second_up.classList.add("red")
+        arrow_lie.classList.add("green_arrow_lie")
+        arrow_up.classList.add("red_arrow_up")
+        change_color = 0
+        function countDown() {
+            display_second_lie.innerText = count
+            display_second_up.innerText = count
+            console.log(count);
+            if (count <= 1) {
+                green_north *= -1
+                count = 11;
+                change_color = 2;
+            }
+            if(change_color === 1) {
+                if (green_north == 1){
+                    display_second_lie.classList.remove(...display_second_lie.classList);
+                    display_second_up.classList.remove(...display_second_up.classList)
+                    arrow_lie.classList.remove("red_arrow_lie");
+                    arrow_up.classList.remove("green_arrow_up");
+                    display_second_lie.classList.add("green")
+                    display_second_up.classList.add("red")
+                    arrow_lie.classList.add('green_arrow_lie')
+                    arrow_up.classList.add("red_arrow_up")
+                } else {
+                    display_second_lie.classList.remove(...display_second_lie.classList);
+                    display_second_up.classList.remove(...display_second_up.classList)
+                    arrow_lie.classList.remove("green_arrow_lie");
+                    arrow_up.classList.remove("red_arrow_up")
+                    display_second_lie.classList.add("red")
+                    display_second_up.classList.add("green")
+                    arrow_lie.classList.add('red_arrow_lie')
+                    arrow_up.classList.add("green_arrow_up")
+                }
+            }
+        // カウントが0になったらタイマーを停止
+            timer = setTimeout(countDown, 1000);
+            change_color --;
+            count--;
+        }
+        // 初回実行
+        let timer = setTimeout(countDown, 1000);
     </script>
 </body>
 </html>
