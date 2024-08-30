@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>リアルタイム信号機マップ：使い方と概要</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>リアルタイム信号機マップ：使い方と概要</h1>
+    <h2>はじめに</h2>
+    <p>このサイトは、神奈川県内の信号機の色を予測し、リアルタイムで表示することを目的としたウェブアプリケーションです。OpenStreetMapをベースに、交通信号機の位置情報を表示し、各信号機の現在の状態を予測しています。</p>
+
+    <h2>主な特徴</h2>
+    <ul>
+        <li><strong>信号機の色予測</strong>: 本サイトは、現在の時刻に基づいて各信号機の色（赤・黄・青）を予測し、表示します。</li>
+        <li><strong>OpenStreetMapの使用</strong>: 地図データはOpenStreetMapを利用しており、正確で最新の地理情報を提供しています。</li>
+        <li><strong>オープンデータの活用</strong>: 信号機の動作予測には、<a href="https://www.jartic.or.jp/" target="_blank">一般財団法人日本交通管理技術協会（JARTIC）</a>から公開されているオープンデータを使用しています。</li>
+    </ul>
+
+    <h2>使い方</h2>
+    <ol>
+        <li>地図上で目的の地域にズームインします。</li>
+        <li>信号機アイコンをクリックすると、その交差点の詳細情報が表示されます。</li>
+        <li>画面下部に表示される情報パネルで、信号機の現在の状態と予測された色を確認できます。</li>
+        <li>「現在位置を表示」ボタンをクリックすると、あなたの現在地を中心に地図が移動します。</li>
+    </ol>
+
+    <h2>注意事項</h2>
+    <div class="warning">
+        <ul>
+            <li><strong>予測の正確性</strong>: 本サイトで表示される信号機の色は予測であり、必ずしも実際の状態と一致しない場合があります。</li>
+            <li><strong>交通規則の遵守</strong>: 実際の道路を走行する際は、常に実際の信号機と交通規制に従ってください。本サイトの情報のみに頼ることは危険です。</li>
+            <li><strong>データの更新</strong>: 信号機の位置や動作パターンは変更される可能性があります。最新の情報については、常に公式の交通情報を確認してください。</li>
+        </ul>
+    </div>
+
+    <h2>開発者情報</h2>
+    <p>このサイトは以下の開発者によって作成されました：</p>
+    <ul>
+        <li>ガラパゴス (<a href="https://x.com/SArdJSGd0LsZpUe" target="_blank">@SArdJSGd0LsZpUe</a>)</li>
+        <li>Lee (<a href="https://x.com/LEE20070808" target="_blank">@LEE20070808</a>)</li>
+    </ul>
+    <p>ご質問やフィードバックがありましたら、上記のTwitterアカウントまでDMでご連絡ください。</p>
+
+    <h2>免責事項</h2>
+    <p>本サイトは情報提供を目的としており、交通安全や運転の判断材料として使用することは推奨されません。道路を利用する際は、必ず実際の交通信号と交通規則に従ってください。本サイトの使用によって生じたいかなる損害についても、開発者は責任を負いかねます。</p>
+</body>
+</html>
