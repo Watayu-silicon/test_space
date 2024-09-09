@@ -245,6 +245,15 @@
 <body>
     <div id="map"></div>
     <button id="locateMe">現在位置を表示</button>
+        <div id="signal-info">
+        <button id="expand-btn">拡大</button>
+        <button class="start-btn" style="width:60px; font-size: 10px; position: relative; top: 4%; left: 33%; z-index: 1000;">Start compass</button>
+        <p id="info"></p>
+        <div class="arrow-container">
+            <div class="horizontal_arrow" id="arrow_lie"></div>    
+            <div class="vertical_arrow" id="arrow_up"></div>
+        </div>
+    </div>
     <script>
 
         // 既存のJavaScriptコードをここに配置し、以下の変更を加えます
