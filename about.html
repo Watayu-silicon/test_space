@@ -3,69 +3,525 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>リアルタイム信号機マップ：使い方と概要</title>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <style>
-        body {
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
             font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
         }
-        h1, h2 {
-            color: #2c3e50;
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color: #333;
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 1000;
         }
-        ul {
-            padding-left: 20px;
+        #menu-btn {
+            font-size: 24px;
+            margin-right: 20px;
+            cursor: pointer;
         }
-        .warning {
-            background-color: #fff3cd;
-            border: 1px solid #ffeeba;
-            border-radius: 5px;
+        #map {
+            height: calc(100% - 60px);
+            width: 100%;
+            position: absolute;
+            top: 60px;
+        }
+        #locateMe {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
             padding: 10px;
-            margin: 10px 0;
+            background-color: white;
+            border: none;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            cursor: pointer;
+        }
+        #signal-info {
+            position: fixed;
+            bottom: -340px; /* 最初は画面の外にある状態 */
+            left: 0;
+            right: 0;
+            height: 300px;
+            background-color: white;
+            transition: bottom 0.3s, height 0.3s; /* bottom のアニメーションを追加 */
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 1001;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        #signal-info.active {
+            bottom: -120px; /* ボタンがクリックされると、画面内にスライドイン */
+        }
+
+        #signal-info.full {
+            bottom: -40px; /* 上方向にスライドし、全画面モードにする */
+            height: calc(100% - 60px); /* 全画面モードの高さ */
+        }
+
+
+        .arrow-container {
+            position: absolute;
+            left: 0%;
+            top: -18%;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #display_second_lie {
+            left: 10%;
+            font-size: 52px;
+            position: absolute;
+            top: 36%;
+            transform-origin: center center;
+        }
+        #display_second_up {
+            left: 45%;
+            font-size: 52px;
+            position: absolute;
+            top: 57%;
+            transform-origin: center center;
+        }
+
+        .horizontal_arrow {
+            background: linear-gradient(90deg, red 100%, antiquewhite 100%);
+            width: 160px;
+            background-color: antiquewhite;
+            transition: background 1s linear;
+            height: 8px;
+            position: absolute;
+        }
+        
+        .horizontal_arrow::before {
+            content: '';
+            position: absolute;
+            left: -14px;
+            top: -6px;
+            width: 0;
+            height: 0;
+            border-right: 20px solid #000;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+        }
+
+        .horizontal_arrow::after {
+            content: '';
+            position: absolute;
+            right: -14px;
+            top: -6px;
+            width: 0;
+            height: 0;
+            border-left: 20px solid #000;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+        }
+
+        .vertical_arrow {
+            background: linear-gradient(antiquewhite 0%, limegreen 0%);
+            width: 8px;
+            height: 160px;
+            background-color:antiquewhite;
+            transition: background 1s linear;
+            position: absolute;
+        }
+        
+        .vertical_arrow::before {
+            content: '';
+            position: absolute;
+            bottom: -14px;
+            left: -66%;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+        }
+
+        .vertical_arrow::after {
+            content: '';
+            position: absolute;
+            top: -14px;
+            left: -66%;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+        }
+        .green_arrow_lie::after{
+            border-left: 20px solid limegreen;
+        }
+        .green_arrow_lie::before{
+            border-right: 20px solid limegreen;
+        }
+        .green_arrow_up::before {
+            border-top: 20px solid limegreen;
+        }
+
+        .green_arrow_up::after {
+            border-bottom: 20px solid limegreen;
+        }
+
+        .red_arrow_up::before {
+            border-top: 20px solid red;
+        }
+
+        .red_arrow_up::after {
+            border-bottom: 20px solid red;
+        }
+        .red_arrow_lie::after {
+            border-left: 20px solid red;
+        }
+        .red_arrow_lie::before {
+            border-right: 20px solid red;
+        }
+        #request_btn {
+            position: relative;
+            z-index: 1000;
+        }
+        #expand-btn {
+            position: absolute;
+            z-index: 1500;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            background-color: #f0f0f0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #info {
+            position: relative;
+            top: -25px;
+        }
+        #menu {
+            position: fixed;
+            top: 60px;
+            left: -250px;
+            width: 210px;
+            height: calc(100% - 60px);
+            background-color: #f8f8f8;
+            transition: left 0.3s;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        #menu.active {
+            z-index: 2000;
+            position: relative;
+            left: 0;
+        }
+        #menu ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        #menu ul li {
+            padding: 15px 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        #menu ul li a {
+            color: #333;
+            text-decoration: none;
+            display: block;
+        }
+        #menu ul li a:hover {
+            background-color: #e8e8e8;
         }
     </style>
 </head>
 <body>
-    <h1>リアルタイム信号機マップ：使い方と概要</h1>
-    <h2>はじめに</h2>
-    <p>このサイトは、神奈川県内の信号機の色を予測し、リアルタイムで表示することを目的としたウェブアプリケーションです。OpenStreetMapをベースに、交通信号機の位置情報を表示し、各信号機の現在の状態を予測しています。</p>
+    <div id="map"></div>
+    <button id="locateMe">現在位置を表示</button>
+    <script>
 
-    <h2>主な特徴</h2>
-    <ul>
-        <li><strong>信号機の色予測</strong>: 本サイトは、現在の時刻に基づいて各信号機の色（赤・黄・青）を予測し、表示します。</li>
-        <li><strong>OpenStreetMapの使用</strong>: 地図データはOpenStreetMapを利用しており、正確で最新の地理情報を提供しています。</li>
-        <li><strong>オープンデータの活用</strong>: 信号機の動作予測には、<a href="https://www.jartic.or.jp/" target="_blank">一般財団法人日本交通管理技術協会（JARTIC）</a>から公開されているオープンデータを使用しています。</li>
-    </ul>
+        document.getElementById('menu-btn').addEventListener('click', function() {
+            document.getElementById('menu').classList.toggle('active');
+        });
 
-    <h2>使い方</h2>
-    <ol>
-        <li>地図上で目的の地域にズームインします。</li>
-        <li>信号機アイコンをクリックすると、その交差点の詳細情報が表示されます。</li>
-        <li>画面下部に表示される情報パネルで、信号機の現在の状態と予測された色を確認できます。</li>
-        <li>「現在位置を表示」ボタンをクリックすると、あなたの現在地を中心に地図が移動します。</li>
-    </ol>
+        // 既存のJavaScriptコードをここに配置し、以下の変更を加えます
+        
 
-    <h2>注意事項</h2>
-    <div class="warning">
-        <ul>
-            <li><strong>予測の正確性</strong>: 本サイトで表示される信号機の色は予測であり、必ずしも実際の状態と一致しない場合があります。</li>
-            <li><strong>交通規則の遵守</strong>: 実際の道路を走行する際は、常に実際の信号機と交通規制に従ってください。本サイトの情報のみに頼ることは危険です。</li>
-            <li><strong>データの更新</strong>: 信号機の位置や動作パターンは変更される可能性があります。最新の情報については、常に公式の交通情報を確認してください。</li>
-        </ul>
-    </div>
+        var kanagawaCenter = [35.4478, 139.6425];
+        var map = L.map('map').setView(kanagawaCenter, 10);
+        var markers = L.layerGroup().addTo(map);
 
-    <h2>開発者情報</h2>
-    <p>このサイトは以下の開発者によって作成されました：</p>
-    <ul>
-        <li>ガラパゴス (<a href="https://x.com/SArdJSGd0LsZpUe" target="_blank">@SArdJSGd0LsZpUe</a>)</li>
-        <li>Lee (<a href="https://x.com/LEE20070808" target="_blank">@LEE20070808</a>)</li>
-    </ul>
-    <p>ご質問やフィードバックがありましたら、上記のTwitterアカウントまでDMでご連絡ください。</p>
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
 
-    <h2>免責事項</h2>
-    <p>本サイトは情報提供を目的としており、交通安全や運転の判断材料として使用することは推奨されません。道路を利用する際は、必ず実際の交通信号と交通規則に従ってください。本サイトの使用によって生じたいかなる損害についても、開発者は責任を負いかねます。</p>
+        var kanagawaBounds = L.latLngBounds(
+            [35.1331, 138.9270],
+            [35.6636, 139.8229]
+        );
+
+        map.setMaxBounds(kanagawaBounds);
+        map.on('drag', function() {
+            map.panInsideBounds(kanagawaBounds, { animate: false });
+        });
+
+        var markers = L.layerGroup().addTo(map);
+
+        function loadTrafficSignals() {
+            if (map.getZoom() < 16) {
+                markers.clearLayers();
+                return;
+            }
+
+            var bounds = map.getBounds();
+            var overpassQuery = `
+                [out:json];
+                area["name"="神奈川県"]->.searchArea;
+                (
+                node["highway"="traffic_signals"]
+                    (${bounds.getSouth()},${bounds.getWest()},${bounds.getNorth()},${bounds.getEast()})
+                    (area.searchArea);
+                );
+                out body;
+            `;
+
+            fetch('https://overpass-api.de/api/interpreter', {
+                method: 'POST',
+                body: 'data=' + encodeURIComponent(overpassQuery)
+            })
+            .then(response => response.json())
+            .then(data => {
+                markers.clearLayers();
+                
+                // マーカーをグループ化する
+                let groups = groupMarkers(data.elements);
+                
+                // 各グループの中心にマーカーを配置
+                // 各グループの中心にマーカーを配置
+                // 各グループの中心にマーカーを配置
+                groups.forEach(group => {
+                    let centerLat = group.reduce((sum, node) => sum + node.lat, 0) / group.length;
+                    let centerLon = group.reduce((sum, node) => sum + node.lon, 0) / group.length;
+                    let id = group[0].id;
+
+                    // 各ノードの name タグを確認し、存在するものを使用する
+                    let name = null;
+                    for (let node of group) {
+                        if (node.tags?.name) {
+                            name = node.tags.name;
+                            break;
+                        }
+                    }
+
+                    let popup = L.popup()
+                        .setLatLng([centerLat, centerLon])
+                        .setContent(`
+                            <h3>交差点情報</h3>
+                            <p>ID: ${id}</p>
+                            <p>名称: ${name || '不明'}</p>
+                            <p>緯度: ${centerLat.toFixed(6)}</p>
+                            <p>経度: ${centerLon.toFixed(6)}</p>
+                            <p>グループ内の信号数: ${group.length}</p>
+                        `);
+
+                    L.circleMarker([centerLat, centerLon], {
+                        radius: 6,
+                        fillColor: "#ff7800",
+                        color: "#000",
+                        weight: 1,
+                        opacity: 1,
+                        fillOpacity: 0.8,
+                        id: id,
+                        name: name // マーカーにも名称を設定
+                    }).addTo(markers)
+                    .bindPopup(popup)
+                    .on('click', onMarkerClick);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function groupMarkers(nodes) {
+            const MAX_DISTANCE = 0.0008; // 約11メートル
+            let groups = [];
+
+            nodes.forEach(node => {
+                let added = false;
+                for (let group of groups) {
+                    if (isClose(node, group[0], MAX_DISTANCE)) {
+                        group.push(node);
+                        added = true;
+                        break;
+                    }
+                }
+                if (!added) {
+                    groups.push([node]);
+                }
+            });
+
+            return groups;
+        }
+
+        function isClose(node1, node2, maxDistance) {
+            return Math.abs(node1.lat - node2.lat) < maxDistance && 
+                Math.abs(node1.lon - node2.lon) < maxDistance;
+        }
+
+
+
+        let currentPositionMarker;
+
+        function showCurrentPosition() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var lat = position.coords.latitude;
+                    var lon = position.coords.longitude;
+
+                    // 既存のマーカーを削除
+                    if (currentPositionMarker) {
+                        map.removeLayer(currentPositionMarker);
+                    }
+
+                    // 新しいマーカーを追加
+                    currentPositionMarker = L.marker([lat, lon]).addTo(map);
+                    currentPositionMarker.bindPopup("あなたの現在位置").openPopup();
+
+                    // マップの中心を現在位置に移動
+                    map.setView([lat, lon], 15);
+                }, function(error) {
+                    console.error("位置情報の取得に失敗しました: ", error);
+                    var errorMessage;
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage = "位置情報の使用が許可されていません。";
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage = "位置情報が利用できません。";
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage = "位置情報の取得がタイムアウトしました。";
+                            break;
+                        default:
+                            errorMessage = "不明なエラーが発生しました。";
+                    }
+                    alert(errorMessage);
+                    // 代替手段として、デフォルトの位置を設定
+                    setDefaultPosition();
+                }, {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                });
+            } else {
+                alert("お使いのブラウザは位置情報をサポートしていません。");
+                setDefaultPosition();
+            }
+        }
+
+        function setDefaultPosition() {
+            // 神奈川県庁の位置をデフォルトとして設定
+            var defaultLat = 35.4478;
+            var defaultLon = 139.6425;
+            currentPositionMarker = L.marker([defaultLat, defaultLon]).addTo(map);
+            currentPositionMarker.bindPopup("デフォルト位置（神奈川県庁）").openPopup();
+            map.setView([defaultLat, defaultLon], 15);
+        }
+
+        // ボタンにイベントリスナーを追加
+        document.getElementById('locateMe').addEventListener('click', showCurrentPosition);
+
+
+
+        map.on('moveend', loadTrafficSignals);
+        map.on('zoomend', loadTrafficSignals);
+
+        
+
+        loadTrafficSignals();
+
+
+
+        // マーカークリック時の処理を変更
+        async function onMarkerClick(e) {
+            let signalInfo = document.getElementById('signal-info');
+            signalInfo.classList.add('active');
+            signalInfo.classList.remove('full');
+
+            // 交差点の情報を取得する
+            let centerLat = e.latlng.lat;
+            let centerLon = e.latlng.lng;
+            let id = e.target.options.id;
+            let name = e.target.options.name; // 信号機の名称を取得
+
+            let info = `
+                <h3>交差点情報</h3>
+                <p>名称: ${name || '不明'}</p> <!-- 名称がない場合は '不明' と表示 -->
+                <div id="data-display"></div>
+            `;
+
+
+            // 交差点の情報を表示する
+        }
+
+
+        // 拡大ボタンの処理
+        document.getElementById('expand-btn').addEventListener('click', function() {
+            const signalInfo = document.getElementById('signal-info');
+            
+            // 'active' クラスが存在しない場合、まず下からスライドインさせる
+            if (!signalInfo.classList.contains('active')) {
+                signalInfo.classList.add('active');
+            } else {
+                // 'active' クラスが存在する場合は 'full' クラスをトグル
+                signalInfo.classList.toggle('full');
+            }
+            
+            // ボタンのテキストを変更
+            this.textContent = signalInfo.classList.contains('full') ? '縮小' : '拡大';
+        });
+
+        // signal-info のクリックイベントを監視し、'active' クラスを削除
+        document.getElementById('map').addEventListener('click', function() {
+            const signalInfo = document.getElementById('signal-info');
+            map_el = document.getElementById('map')
+            
+            // 'full' クラスがない状態でクリックされた場合、'active' クラスを削除
+            if (signalInfo.classList.contains('active') && map_el.querySelector('h3') === null) {
+                signalInfo.classList.remove('active');
+            }
+        });
+
+
+
+        /*// マーカー作成時にクリックイベントを追加
+        L.circleMarker([centerLat, centerLon], {
+            // 既存のオプション
+        }).addTo(markers)
+        .bindPopup(popup)
+        .on('click', onMarkerClick);*/
+
+        // 地図の初期化後に現在位置ボタンを追加
+        map.on('load', function() {
+            var locateMeBtn = L.control({position: 'bottomright'});
+            locateMeBtn.onAdd = function (map) {
+                var div = L.DomUtil.get('locateMe');
+                L.DomEvent.on(div, 'click', function (ev) {
+                    L.DomEvent.stopPropagation(ev);
+                    showCurrentPosition();
+                });
+                return div;
+            };
+            locateMeBtn.addTo(map);
+        });
+
+        
+    </script>
 </body>
 </html>
