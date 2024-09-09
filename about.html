@@ -468,31 +468,7 @@
 
 
         // 拡大ボタンの処理
-        document.getElementById('expand-btn').addEventListener('click', function() {
-            const signalInfo = document.getElementById('signal-info');
-            
-            // 'active' クラスが存在しない場合、まず下からスライドインさせる
-            if (!signalInfo.classList.contains('active')) {
-                signalInfo.classList.add('active');
-            } else {
-                // 'active' クラスが存在する場合は 'full' クラスをトグル
-                signalInfo.classList.toggle('full');
-            }
-            
-            // ボタンのテキストを変更
-            this.textContent = signalInfo.classList.contains('full') ? '縮小' : '拡大';
-        });
-
-        // signal-info のクリックイベントを監視し、'active' クラスを削除
-        document.getElementById('map').addEventListener('click', function() {
-            const signalInfo = document.getElementById('signal-info');
-            map_el = document.getElementById('map')
-            
-            // 'full' クラスがない状態でクリックされた場合、'active' クラスを削除
-            if (signalInfo.classList.contains('active') && map_el.querySelector('h3') === null) {
-                signalInfo.classList.remove('active');
-            }
-        });
+        
 
 
 
