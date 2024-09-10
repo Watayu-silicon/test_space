@@ -1,1 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>カメラ撮影と画像保存</title>
+    <style>
+        #videoElement {
+            width: 100%;
+            max-width: 640px;
+            height: auto;
+        }
+        #captureButton {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h1 id='disp'></h1>
+    <video id="videoElement" autoplay></video>
+    <button id="captureButton">写真を撮る</button>
+    <canvas id="canvas" style="display:none;"></canvas>
 
+    <script>
+        const disp = document.getElementById('disp');
+        if(localStorage.getItem('savedPhotos')){
+            disp.innerText = localStorage.getItem('savedPhotos')
+        }
+        const video = document.getElementById('videoElement');
+        const canvas = document.getElementById('canvas');
+        const captureButton = document.getElementById('captureButton');
+        let stream;
+
+        // カメラの起動
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+            } catch (err) {
+                console.error("カメラの起動に失敗しました:", err);
+            }
+        }
+
+        // 写真の撮影と保存
+        async function captureAndSave() {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+            const fileName = `photo_${Date.now()}.jpg`;
+
+            try {
+                // ファイルの保存
+                const handle = await window.showSaveFilePicker({
+                    suggestedName: fileName,
+                    types: [{
+                        description: 'JPEG Image',
+                        accept: {'image/jpeg': ['.jpg']}
+                    }]
+                });
+                const writable = await handle.createWritable();
+                await writable.write(blob);
+                await writable.close();
+
+                // パスの保存（注：実際のファイルパスは取得できないため、ファイル名を保存）
+                const savedPhotos = JSON.parse(localStorage.getItem('savedPhotos') || '[]');
+                savedPhotos.push(fileName);
+                localStorage.setItem('savedPhotos', JSON.stringify(savedPhotos));
+
+                console.log(`画像が保存されました: ${fileName}`);
+            } catch (err) {
+                console.error("画像の保存に失敗しました:", err);
+            }
+        }
+
+        // イベントリスナーの設定
+        captureButton.addEventListener('click', captureAndSave);
+
+        // カメラの起動
+        startCamera();
+    </script>
+</body>
+</html>
