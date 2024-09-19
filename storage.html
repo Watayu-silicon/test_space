@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1 id="out"></h1>
+    <script>
+        out = document.getElementById("out");
+        if ('storage' in navigator && 'estimate' in navigator.storage) {
+            navigator.storage.estimate().then(estimate => {
+            let usedBytes = estimate.usage; // 使用済みバイト数
+            let quotaBytes = estimate.quota; // 総ストレージ容量（バイト数）
+        
+            out.innerText = `Used: ${(usedBytes / (1024 * 1024)).toFixed(2)} MB out of ${(quotaBytes / (1024 * 1024)).toFixed(2)} MB`;
+            });
+        } else {
+            out.innerText = 'Storage API is not supported on this browser.';
+        }
+    </script>
+</body>
+</html>
